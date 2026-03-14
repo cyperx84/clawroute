@@ -1,16 +1,8 @@
 import { routeAllowedByCostMode } from './budget.js';
 import { loadPolicies, loadRoutes } from './loaders.js';
 import { applyRequestOverride, parseOverride, routeMatchesOverride } from './overrides.js';
-import type { Policy, RouteTarget, RoutingDecision, RoutingRequest } from './types.js';
-
-function matchesPolicy(policy: Policy, request: RoutingRequest): boolean {
-  const { match } = policy;
-  if (match.agent_id && !match.agent_id.includes(request.agent_id)) return false;
-  if (match.task_type && !match.task_type.includes(request.task_type)) return false;
-  if (match.cost_mode && !match.cost_mode.includes(request.cost_mode)) return false;
-  if (match.privacy_mode && !match.privacy_mode.includes(request.privacy_mode)) return false;
-  return true;
-}
+import { matchesPolicy, routeAllowedByPolicyBudget } from './policy.js';
+import type { RouteTarget, RoutingDecision, RoutingRequest } from './types.js';
 
 function supportsRequest(route: RouteTarget, request: RoutingRequest): boolean {
   if (!route.task_types.includes(request.task_type)) return false;
@@ -33,23 +25,23 @@ function selectCandidates(
   preferredRouteIds: string[],
   request: RoutingRequest,
   warnings: string[],
+  policyMatchedRoutes: ReturnType<typeof loadPolicies>,
 ): RouteTarget[] {
   const override = parseOverride(request.user_override);
 
+  const baseFilter = (route: RouteTarget) =>
+    supportsRequest(route, request) && routeAllowedByPolicyBudget(route, policyMatchedRoutes);
+
   if (override.routeId || override.provider || override.model) {
     warnings.push('user override applied');
-    return dedupeRoutes(
-      routeRegistry
-        .filter((route) => routeMatchesOverride(route, override))
-        .filter((route) => supportsRequest(route, request)),
-    );
+    return dedupeRoutes(routeRegistry.filter((route) => routeMatchesOverride(route, override)).filter(baseFilter));
   }
 
   return dedupeRoutes(
     preferredRouteIds
       .map((id) => routeRegistry.find((route) => route.route_id === id))
       .filter((route): route is RouteTarget => Boolean(route))
-      .filter((route) => supportsRequest(route, request)),
+      .filter(baseFilter),
   );
 }
 
@@ -68,11 +60,19 @@ export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
     warnings.push('no explicit policy matched; using capability fallback');
   }
 
-  const candidates = selectCandidates(routeRegistry, preferredRouteIds, request, warnings);
+  const candidates = selectCandidates(
+    routeRegistry,
+    preferredRouteIds,
+    request,
+    warnings,
+    matchedPolicies,
+  );
 
   if (candidates.length === 0) {
     const fallbackCandidates = dedupeRoutes(
-      routeRegistry.filter((route) => supportsRequest(route, request)),
+      routeRegistry
+        .filter((route) => supportsRequest(route, request))
+        .filter((route) => routeAllowedByPolicyBudget(route, matchedPolicies)),
     );
     if (fallbackCandidates.length === 0) {
       throw new Error(`No route found for request ${request.request_id}`);
@@ -93,7 +93,9 @@ export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
       })),
       matched_policies: matchedPolicies.map((policy) => policy.id),
       budget: {
-        max_cost_usd: matchedPolicies[0]?.route.max_cost_usd,
+        max_cost_usd: matchedPolicies.length
+          ? Math.min(...matchedPolicies.map((policy) => policy.route.max_cost_usd ?? Infinity))
+          : undefined,
         mode: request.cost_mode,
       },
       reason: [
@@ -122,7 +124,9 @@ export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
     })),
     matched_policies: matchedPolicies.map((policy) => policy.id),
     budget: {
-      max_cost_usd: matchedPolicies[0]?.route.max_cost_usd,
+      max_cost_usd: matchedPolicies.length
+        ? Math.min(...matchedPolicies.map((policy) => policy.route.max_cost_usd ?? Infinity))
+        : undefined,
       mode: request.cost_mode,
     },
     reason: [

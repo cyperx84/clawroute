@@ -8,7 +8,7 @@
     },
     "route": {
       "preferred": ["codex-primary", "sonnet-fallback"],
-      "max_cost_usd": 0.5
+      "max_cost_usd": 0.2
     }
   },
   {

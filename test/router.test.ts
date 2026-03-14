@@ -25,10 +25,10 @@ test('balanced builder coding prefers budget-allowed route', () => {
   assert.equal(decision.selected.route_id, 'sonnet-fallback');
 });
 
-test('premium builder coding can select codex', () => {
+test('premium builder coding still respects strict policy budget', () => {
   const req = { ...baseRequest(), cost_mode: 'premium' as const };
   const decision = routeRequest(req);
-  assert.equal(decision.selected.route_id, 'codex-primary');
+  assert.equal(decision.selected.route_id, 'sonnet-fallback');
 });
 
 test('local-only research selects local route', () => {
@@ -45,7 +45,7 @@ test('local-only research selects local route', () => {
   assert.equal(decision.selected.route_id, 'local-private');
 });
 
-test('route override forces codex when budget mode allows it', () => {
+test('route override does not bypass strict policy budget', () => {
   const req: RoutingRequest = {
     ...baseRequest(),
     request_id: 'req_override',
@@ -53,5 +53,5 @@ test('route override forces codex when budget mode allows it', () => {
     user_override: 'route:codex-primary',
   };
   const decision = routeRequest(req);
-  assert.equal(decision.selected.route_id, 'codex-primary');
+  assert.equal(decision.selected.route_id, 'sonnet-fallback');
 });
