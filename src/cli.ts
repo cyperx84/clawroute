@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 import { createSelectionTrace } from './trace.js';
 import { routeRequest } from './router.js';
 import type { RoutingRequest } from './types.js';
@@ -19,10 +21,27 @@ function sampleRequest(): RoutingRequest {
   };
 }
 
+function loadJsonFile(path: string): RoutingRequest {
+  const fullPath = resolve(process.cwd(), path);
+  return JSON.parse(readFileSync(fullPath, 'utf8')) as RoutingRequest;
+}
+
 const args = process.argv.slice(2);
 const traceMode = args.includes('--trace');
-const jsonArg = args.find((arg) => !arg.startsWith('--'));
-const request: RoutingRequest = jsonArg ? JSON.parse(jsonArg) : sampleRequest();
+const fileIndex = args.findIndex((arg) => arg === '--file');
+const fileArg = fileIndex >= 0 ? args[fileIndex + 1] : undefined;
+const jsonArg = args.find((arg, index) => {
+  if (arg.startsWith('--')) return false;
+  if (fileIndex >= 0 && index === fileIndex + 1) return false;
+  return true;
+});
+
+const request: RoutingRequest = fileArg
+  ? loadJsonFile(fileArg)
+  : jsonArg
+    ? JSON.parse(jsonArg)
+    : sampleRequest();
+
 const decision = routeRequest(request);
 
 if (traceMode) {

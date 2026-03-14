@@ -1,0 +1,14 @@
+{
+  "schema": "clawroute.routing-request.v1",
+  "request_id": "req_example_builder_override",
+  "agent_id": "builder",
+  "session_id": "sess_example_builder_override",
+  "task_type": "coding",
+  "tool_kind": "exec",
+  "channel": "discord",
+  "context_size": "medium",
+  "capabilities_required": ["tools", "coding"],
+  "privacy_mode": "standard",
+  "cost_mode": "balanced",
+  "user_override": "route:codex-primary,cost:premium"
+}

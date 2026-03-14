@@ -1,0 +1,14 @@
+{
+  "schema": "clawroute.routing-request.v1",
+  "request_id": "req_example_research_local",
+  "agent_id": "researcher",
+  "session_id": "sess_example_research_local",
+  "task_type": "research",
+  "tool_kind": "web_search",
+  "channel": "discord",
+  "context_size": "medium",
+  "capabilities_required": [],
+  "privacy_mode": "local-only",
+  "cost_mode": "cheap",
+  "user_override": null
+}

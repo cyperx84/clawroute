@@ -70,6 +70,8 @@ ClawRoute
 npm install
 npm run route
 npm run route -- --trace
+npm run route -- --file examples/builder-coding-balanced.json
+npm run route -- --trace --file examples/research-local-only.json
 ```
 
 Pass a request JSON string:
