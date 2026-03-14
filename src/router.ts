@@ -1,4 +1,5 @@
 import { routeAllowedByCostMode } from './budget.js';
+import { buildPolicyWarnings } from './diagnostics.js';
 import { loadPolicies, loadRoutes } from './loaders.js';
 import { applyRequestOverride, parseOverride, routeMatchesOverride } from './overrides.js';
 import {
@@ -8,6 +9,7 @@ import {
   strictestPolicyBudget,
 } from './policy.js';
 import type { RouteTarget, RoutingDecision, RoutingRequest } from './types.js';
+import { validateRoutingDecision, validateRoutingRequest } from './validate.js';
 
 function supportsRequest(route: RouteTarget, request: RoutingRequest): boolean {
   if (!route.task_types.includes(request.task_type)) return false;
@@ -51,6 +53,7 @@ function selectCandidates(
 }
 
 export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
+  validateRoutingRequest(rawRequest);
   const request = applyRequestOverride(rawRequest);
   const policies = loadPolicies();
   const routeRegistry = loadRoutes();
@@ -58,13 +61,7 @@ export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
   const preferredRouteIds = resolvePolicyPreferredRoutes(matchedPolicies);
   const policyBudgetCap = strictestPolicyBudget(matchedPolicies);
 
-  const warnings: string[] = [];
-  if (request.privacy_mode === 'local-only') {
-    warnings.push('local-only privacy mode requested');
-  }
-  if (matchedPolicies.length === 0) {
-    warnings.push('no explicit policy matched; using capability fallback');
-  }
+  const warnings = buildPolicyWarnings(request, matchedPolicies);
 
   const candidates = selectCandidates(
     routeRegistry,
@@ -84,7 +81,7 @@ export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
       throw new Error(`No route found for request ${request.request_id}`);
     }
     const [selected, ...fallback] = fallbackCandidates;
-    return {
+    return validateRoutingDecision({
       schema: 'clawroute.routing-decision.v1',
       request_id: request.request_id,
       selected: {
@@ -109,11 +106,11 @@ export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
         `cost_mode=${request.cost_mode}`,
       ],
       warnings,
-    };
+    });
   }
 
   const [selected, ...fallback] = candidates;
-  return {
+  return validateRoutingDecision({
     schema: 'clawroute.routing-decision.v1',
     request_id: request.request_id,
     selected: {
@@ -139,5 +136,5 @@ export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
       `matched_policy_count=${matchedPolicies.length}`,
     ],
     warnings,
-  };
+  });
 }
