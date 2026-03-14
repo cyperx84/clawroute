@@ -1,5 +1,6 @@
 import { routeAllowedByCostMode } from './budget.js';
 import { loadPolicies, loadRoutes } from './loaders.js';
+import { applyRequestOverride, parseOverride, routeMatchesOverride } from './overrides.js';
 import type { Policy, RouteTarget, RoutingDecision, RoutingRequest } from './types.js';
 
 function matchesPolicy(policy: Policy, request: RoutingRequest): boolean {
@@ -27,18 +28,37 @@ function dedupeRoutes(routes: RouteTarget[]): RouteTarget[] {
   });
 }
 
-export function routeRequest(request: RoutingRequest): RoutingDecision {
-  const policies = loadPolicies();
-  const routeRegistry = loadRoutes();
-  const matchedPolicies = policies.filter((policy) => matchesPolicy(policy, request));
-  const preferredRouteIds = matchedPolicies.flatMap((policy) => policy.route.preferred);
+function selectCandidates(
+  routeRegistry: RouteTarget[],
+  preferredRouteIds: string[],
+  request: RoutingRequest,
+  warnings: string[],
+): RouteTarget[] {
+  const override = parseOverride(request.user_override);
 
-  const candidates = dedupeRoutes(
+  if (override.routeId || override.provider || override.model) {
+    warnings.push('user override applied');
+    return dedupeRoutes(
+      routeRegistry
+        .filter((route) => routeMatchesOverride(route, override))
+        .filter((route) => supportsRequest(route, request)),
+    );
+  }
+
+  return dedupeRoutes(
     preferredRouteIds
       .map((id) => routeRegistry.find((route) => route.route_id === id))
       .filter((route): route is RouteTarget => Boolean(route))
       .filter((route) => supportsRequest(route, request)),
   );
+}
+
+export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
+  const request = applyRequestOverride(rawRequest);
+  const policies = loadPolicies();
+  const routeRegistry = loadRoutes();
+  const matchedPolicies = policies.filter((policy) => matchesPolicy(policy, request));
+  const preferredRouteIds = matchedPolicies.flatMap((policy) => policy.route.preferred);
 
   const warnings: string[] = [];
   if (request.privacy_mode === 'local-only') {
@@ -47,6 +67,8 @@ export function routeRequest(request: RoutingRequest): RoutingDecision {
   if (matchedPolicies.length === 0) {
     warnings.push('no explicit policy matched; using capability fallback');
   }
+
+  const candidates = selectCandidates(routeRegistry, preferredRouteIds, request, warnings);
 
   if (candidates.length === 0) {
     const fallbackCandidates = dedupeRoutes(

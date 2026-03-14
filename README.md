@@ -101,6 +101,25 @@ npm run route -- '{
 - `docs/architecture.md`
 - `docs/schemas.md`
 - `docs/roadmap.md`
+- `src/openclaw-contract.md`
+
+## Override syntax
+
+`user_override` supports simple comma-separated directives:
+
+- `route:codex-primary`
+- `provider:openai`
+- `model:openai-codex/gpt-5.4`
+- `cost:premium`
+- `privacy:local-only`
+
+Example:
+
+```json
+{
+  "user_override": "route:codex-primary,cost:premium"
+}
+```
 
 ## Status
 
