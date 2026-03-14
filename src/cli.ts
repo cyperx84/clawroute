@@ -1,3 +1,4 @@
+import { createSelectionTrace } from './trace.js';
 import { routeRequest } from './router.js';
 import type { RoutingRequest } from './types.js';
 
@@ -18,7 +19,23 @@ function sampleRequest(): RoutingRequest {
   };
 }
 
-const input = process.argv[2];
-const request: RoutingRequest = input ? JSON.parse(input) : sampleRequest();
+const args = process.argv.slice(2);
+const traceMode = args.includes('--trace');
+const jsonArg = args.find((arg) => !arg.startsWith('--'));
+const request: RoutingRequest = jsonArg ? JSON.parse(jsonArg) : sampleRequest();
 const decision = routeRequest(request);
-console.log(JSON.stringify(decision, null, 2));
+
+if (traceMode) {
+  console.log(
+    JSON.stringify(
+      {
+        decision,
+        trace: createSelectionTrace(request, decision),
+      },
+      null,
+      2,
+    ),
+  );
+} else {
+  console.log(JSON.stringify(decision, null, 2));
+}

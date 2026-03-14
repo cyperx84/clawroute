@@ -1,0 +1,48 @@
+[
+  {
+    "schema": "clawroute.policy.v1",
+    "id": "builder-coding-default",
+    "match": {
+      "agent_id": ["builder"],
+      "task_type": ["coding"]
+    },
+    "route": {
+      "preferred": ["codex-primary", "sonnet-fallback"],
+      "max_cost_usd": 0.5
+    }
+  },
+  {
+    "schema": "clawroute.policy.v1",
+    "id": "cheap-summary-default",
+    "match": {
+      "task_type": ["summarization", "extraction"],
+      "cost_mode": ["cheap", "balanced"]
+    },
+    "route": {
+      "preferred": ["glm-cheap", "local-private", "openrouter-general"],
+      "max_cost_usd": 0.05
+    }
+  },
+  {
+    "schema": "clawroute.policy.v1",
+    "id": "research-general-default",
+    "match": {
+      "task_type": ["research", "orchestration"]
+    },
+    "route": {
+      "preferred": ["openrouter-general", "sonnet-fallback"],
+      "max_cost_usd": 0.2
+    }
+  },
+  {
+    "schema": "clawroute.policy.v1",
+    "id": "private-mode-default",
+    "match": {
+      "privacy_mode": ["private", "local-only"]
+    },
+    "route": {
+      "preferred": ["local-private", "sonnet-fallback"],
+      "max_cost_usd": 0.1
+    }
+  }
+]

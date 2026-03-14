@@ -7,12 +7,14 @@
 - [ ] choose implementation language/runtime
 
 ## Phase 1 — MVP
-- [ ] implement model capability registry
-- [ ] implement policy loader
-- [ ] implement routing request evaluator
-- [ ] implement budget checks
-- [ ] emit routing decision JSON
-- [ ] add CLI for local testing
+- [x] implement model capability registry
+- [x] implement policy loader
+- [x] implement routing request evaluator
+- [x] implement budget checks
+- [x] emit routing decision JSON
+- [x] add CLI for local testing
+- [x] externalize route/policy config
+- [x] add initial trace output
 
 ## Phase 2 — OpenClaw integration
 - [ ] define OpenClaw routing hook contract

@@ -1,0 +1,47 @@
+[
+  {
+    "route_id": "codex-primary",
+    "provider": "openai",
+    "model": "openai-codex/gpt-5.4",
+    "capabilities": ["tools", "coding"],
+    "cost_class": "high",
+    "privacy_modes": ["standard", "private"],
+    "task_types": ["coding", "orchestration"]
+  },
+  {
+    "route_id": "sonnet-fallback",
+    "provider": "anthropic",
+    "model": "anthropic/claude-sonnet-4-6",
+    "capabilities": ["tools", "coding", "summarization", "pdf", "research"],
+    "cost_class": "medium",
+    "privacy_modes": ["standard", "private"],
+    "task_types": ["coding", "summarization", "research", "pdf", "orchestration"]
+  },
+  {
+    "route_id": "glm-cheap",
+    "provider": "zai",
+    "model": "zai/glm-5",
+    "capabilities": ["summarization", "extraction"],
+    "cost_class": "low",
+    "privacy_modes": ["standard"],
+    "task_types": ["summarization", "extraction"]
+  },
+  {
+    "route_id": "openrouter-general",
+    "provider": "openrouter",
+    "model": "openrouter/auto",
+    "capabilities": ["summarization", "research", "orchestration"],
+    "cost_class": "medium",
+    "privacy_modes": ["standard"],
+    "task_types": ["summarization", "research", "orchestration"]
+  },
+  {
+    "route_id": "local-private",
+    "provider": "local",
+    "model": "local/llama",
+    "capabilities": ["summarization", "extraction", "private"],
+    "cost_class": "low",
+    "privacy_modes": ["private", "local-only"],
+    "task_types": ["summarization", "extraction", "research"]
+  }
+]

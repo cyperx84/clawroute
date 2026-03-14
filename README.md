@@ -57,10 +57,36 @@ ClawRoute
 - schema-first design
 - static rule-based routing
 - capability-aware selection
-- budget caps
+- external JSON route/policy config
+- cost-mode filtering
+- privacy-aware route filtering
 - fallback chains
 - JSON decision traces
 - simple CLI/API surface
+
+## Quick start
+
+```bash
+npm install
+npm run route
+npm run route -- --trace
+```
+
+Pass a request JSON string:
+
+```bash
+npm run route -- '{
+  "schema":"clawroute.routing-request.v1",
+  "request_id":"req_2",
+  "agent_id":"builder",
+  "session_id":"sess_2",
+  "task_type":"coding",
+  "context_size":"medium",
+  "capabilities_required":["tools","coding"],
+  "privacy_mode":"standard",
+  "cost_mode":"balanced"
+}'
+```
 
 ## Example use cases
 

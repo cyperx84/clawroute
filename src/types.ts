@@ -70,4 +70,5 @@ export interface RoutingDecision {
     mode: CostMode;
   };
   reason: string[];
+  warnings?: string[];
 }
