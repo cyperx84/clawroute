@@ -2,6 +2,7 @@
   {
     "schema": "clawroute.policy.v1",
     "id": "builder-coding-default",
+    "priority": 100,
     "match": {
       "agent_id": ["builder"],
       "task_type": ["coding"]
@@ -14,6 +15,7 @@
   {
     "schema": "clawroute.policy.v1",
     "id": "cheap-summary-default",
+    "priority": 20,
     "match": {
       "task_type": ["summarization", "extraction"],
       "cost_mode": ["cheap", "balanced"]
@@ -26,6 +28,7 @@
   {
     "schema": "clawroute.policy.v1",
     "id": "research-general-default",
+    "priority": 30,
     "match": {
       "task_type": ["research", "orchestration"]
     },
@@ -37,6 +40,7 @@
   {
     "schema": "clawroute.policy.v1",
     "id": "private-mode-default",
+    "priority": 80,
     "match": {
       "privacy_mode": ["private", "local-only"]
     },

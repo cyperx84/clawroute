@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clawroute.dev/schemas/routing-decision.schema.json",
+  "title": "ClawRoute Routing Decision",
+  "type": "object",
+  "required": ["schema", "request_id", "selected", "fallback", "matched_policies", "budget", "reason"],
+  "properties": {
+    "schema": { "const": "clawroute.routing-decision.v1" },
+    "request_id": { "type": "string" },
+    "selected": {
+      "type": "object",
+      "required": ["provider", "model", "route_id"],
+      "properties": {
+        "provider": { "type": "string" },
+        "model": { "type": "string" },
+        "route_id": { "type": "string" }
+      },
+      "additionalProperties": false
+    },
+    "fallback": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["provider", "model", "route_id"],
+        "properties": {
+          "provider": { "type": "string" },
+          "model": { "type": "string" },
+          "route_id": { "type": "string" }
+        },
+        "additionalProperties": false
+      }
+    },
+    "matched_policies": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "budget": {
+      "type": "object",
+      "required": ["mode"],
+      "properties": {
+        "max_cost_usd": { "type": "number" },
+        "mode": { "enum": ["cheap", "balanced", "premium"] }
+      },
+      "additionalProperties": false
+    },
+    "reason": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "warnings": {
+      "type": "array",
+      "items": { "type": "string" }
+    }
+  },
+  "additionalProperties": false
+}

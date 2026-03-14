@@ -1,7 +1,12 @@
 import { routeAllowedByCostMode } from './budget.js';
 import { loadPolicies, loadRoutes } from './loaders.js';
 import { applyRequestOverride, parseOverride, routeMatchesOverride } from './overrides.js';
-import { matchesPolicy, routeAllowedByPolicyBudget } from './policy.js';
+import {
+  matchesPolicy,
+  resolvePolicyPreferredRoutes,
+  routeAllowedByPolicyBudget,
+  strictestPolicyBudget,
+} from './policy.js';
 import type { RouteTarget, RoutingDecision, RoutingRequest } from './types.js';
 
 function supportsRequest(route: RouteTarget, request: RoutingRequest): boolean {
@@ -25,12 +30,12 @@ function selectCandidates(
   preferredRouteIds: string[],
   request: RoutingRequest,
   warnings: string[],
-  policyMatchedRoutes: ReturnType<typeof loadPolicies>,
+  matchedPolicies: ReturnType<typeof loadPolicies>,
 ): RouteTarget[] {
   const override = parseOverride(request.user_override);
 
   const baseFilter = (route: RouteTarget) =>
-    supportsRequest(route, request) && routeAllowedByPolicyBudget(route, policyMatchedRoutes);
+    supportsRequest(route, request) && routeAllowedByPolicyBudget(route, matchedPolicies);
 
   if (override.routeId || override.provider || override.model) {
     warnings.push('user override applied');
@@ -50,7 +55,8 @@ export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
   const policies = loadPolicies();
   const routeRegistry = loadRoutes();
   const matchedPolicies = policies.filter((policy) => matchesPolicy(policy, request));
-  const preferredRouteIds = matchedPolicies.flatMap((policy) => policy.route.preferred);
+  const preferredRouteIds = resolvePolicyPreferredRoutes(matchedPolicies);
+  const policyBudgetCap = strictestPolicyBudget(matchedPolicies);
 
   const warnings: string[] = [];
   if (request.privacy_mode === 'local-only') {
@@ -93,9 +99,7 @@ export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
       })),
       matched_policies: matchedPolicies.map((policy) => policy.id),
       budget: {
-        max_cost_usd: matchedPolicies.length
-          ? Math.min(...matchedPolicies.map((policy) => policy.route.max_cost_usd ?? Infinity))
-          : undefined,
+        max_cost_usd: policyBudgetCap,
         mode: request.cost_mode,
       },
       reason: [
@@ -124,9 +128,7 @@ export function routeRequest(rawRequest: RoutingRequest): RoutingDecision {
     })),
     matched_policies: matchedPolicies.map((policy) => policy.id),
     budget: {
-      max_cost_usd: matchedPolicies.length
-        ? Math.min(...matchedPolicies.map((policy) => policy.route.max_cost_usd ?? Infinity))
-        : undefined,
+      max_cost_usd: policyBudgetCap,
       mode: request.cost_mode,
     },
     reason: [

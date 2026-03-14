@@ -39,6 +39,7 @@ export interface RouteTarget {
 export interface Policy {
   schema: 'clawroute.policy.v1';
   id: string;
+  priority?: number;
   match: {
     agent_id?: string[];
     task_type?: TaskType[];

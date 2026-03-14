@@ -10,13 +10,25 @@ export function matchesPolicy(policy: Policy, request: RoutingRequest): boolean 
   return true;
 }
 
-export function routeAllowedByPolicyBudget(route: RouteTarget, policies: Policy[]): boolean {
+export function sortPoliciesByPriority(policies: Policy[]): Policy[] {
+  return [...policies].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0));
+}
+
+export function resolvePolicyPreferredRoutes(policies: Policy[]): string[] {
+  return sortPoliciesByPriority(policies).flatMap((policy) => policy.route.preferred);
+}
+
+export function strictestPolicyBudget(policies: Policy[]): number | undefined {
   const caps = policies
     .map((policy) => policy.route.max_cost_usd)
     .filter((value): value is number => typeof value === 'number');
 
-  if (caps.length === 0) return true;
+  if (caps.length === 0) return undefined;
+  return Math.min(...caps);
+}
 
-  const strictestCap = Math.min(...caps);
-  return estimateMaxCostUsd(route) <= strictestCap;
+export function routeAllowedByPolicyBudget(route: RouteTarget, policies: Policy[]): boolean {
+  const cap = strictestPolicyBudget(policies);
+  if (typeof cap !== 'number') return true;
+  return estimateMaxCostUsd(route) <= cap;
 }

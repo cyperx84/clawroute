@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clawroute.dev/schemas/event.schema.json",
+  "title": "ClawRoute Event",
+  "type": "object",
+  "required": [
+    "schema",
+    "request_id",
+    "route_id",
+    "agent_id",
+    "task_type",
+    "provider",
+    "model",
+    "status",
+    "reason",
+    "matched_policies",
+    "emitted_at"
+  ],
+  "properties": {
+    "schema": { "const": "clawroute.event.v1" },
+    "request_id": { "type": "string" },
+    "route_id": { "type": "string" },
+    "agent_id": { "type": "string" },
+    "task_type": { "type": "string" },
+    "provider": { "type": "string" },
+    "model": { "type": "string" },
+    "status": { "const": "selected" },
+    "estimated_cost_usd": { "type": ["number", "null"] },
+    "reason": { "type": "array", "items": { "type": "string" } },
+    "matched_policies": { "type": "array", "items": { "type": "string" } },
+    "emitted_at": { "type": "string" }
+  },
+  "additionalProperties": false
+}

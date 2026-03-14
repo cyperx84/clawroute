@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clawroute.dev/schemas/policy.schema.json",
+  "title": "ClawRoute Policy",
+  "type": "object",
+  "required": ["schema", "id", "match", "route"],
+  "properties": {
+    "schema": { "const": "clawroute.policy.v1" },
+    "id": { "type": "string" },
+    "priority": { "type": "integer", "minimum": 0 },
+    "match": {
+      "type": "object",
+      "properties": {
+        "agent_id": { "type": "array", "items": { "type": "string" } },
+        "task_type": {
+          "type": "array",
+          "items": { "enum": ["coding", "summarization", "extraction", "research", "orchestration", "vision", "pdf"] }
+        },
+        "cost_mode": {
+          "type": "array",
+          "items": { "enum": ["cheap", "balanced", "premium"] }
+        },
+        "privacy_mode": {
+          "type": "array",
+          "items": { "enum": ["standard", "private", "local-only"] }
+        }
+      },
+      "additionalProperties": false
+    },
+    "route": {
+      "type": "object",
+      "required": ["preferred"],
+      "properties": {
+        "preferred": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "max_cost_usd": { "type": "number" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

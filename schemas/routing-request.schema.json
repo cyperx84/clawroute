@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clawroute.dev/schemas/routing-request.schema.json",
+  "title": "ClawRoute Routing Request",
+  "type": "object",
+  "required": [
+    "schema",
+    "request_id",
+    "agent_id",
+    "session_id",
+    "task_type",
+    "context_size",
+    "capabilities_required",
+    "privacy_mode",
+    "cost_mode"
+  ],
+  "properties": {
+    "schema": { "const": "clawroute.routing-request.v1" },
+    "request_id": { "type": "string" },
+    "agent_id": { "type": "string" },
+    "session_id": { "type": "string" },
+    "task_type": {
+      "enum": ["coding", "summarization", "extraction", "research", "orchestration", "vision", "pdf"]
+    },
+    "tool_kind": { "type": "string" },
+    "channel": { "type": "string" },
+    "context_size": { "enum": ["small", "medium", "large"] },
+    "capabilities_required": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "privacy_mode": { "enum": ["standard", "private", "local-only"] },
+    "cost_mode": { "enum": ["cheap", "balanced", "premium"] },
+    "user_override": {
+      "type": ["string", "null"]
+    }
+  },
+  "additionalProperties": false
+}
