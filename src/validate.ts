@@ -13,10 +13,12 @@ function loadSchema(path: string) {
 const requestSchema = loadSchema('schemas/routing-request.schema.json');
 const decisionSchema = loadSchema('schemas/routing-decision.schema.json');
 const policySchema = loadSchema('schemas/policy.schema.json');
+const routeSchema = loadSchema('schemas/route.schema.json');
 
 const validateRequestSchema = ajv.compile<RoutingRequest>(requestSchema);
 const validateDecisionSchema = ajv.compile<RoutingDecision>(decisionSchema);
 const validatePolicySchema = ajv.compile<Policy>(policySchema);
+const validateRouteSchema = ajv.compile<RouteTarget>(routeSchema);
 
 export function validateRoutingRequest(input: unknown): RoutingRequest {
   if (!validateRequestSchema(input)) {
@@ -48,5 +50,10 @@ export function validateRoutes(input: unknown): RouteTarget[] {
   if (!Array.isArray(input)) {
     throw new Error('Routes config must be an array');
   }
+  input.forEach((route, index) => {
+    if (!validateRouteSchema(route)) {
+      throw new Error(`Invalid route at index ${index}: ${ajv.errorsText(validateRouteSchema.errors)}`);
+    }
+  });
   return input as RouteTarget[];
 }

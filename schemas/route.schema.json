@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://clawroute.dev/schemas/route.schema.json",
+  "title": "ClawRoute Route Target",
+  "type": "object",
+  "required": ["route_id", "provider", "model", "capabilities", "cost_class", "privacy_modes", "task_types"],
+  "properties": {
+    "route_id": { "type": "string" },
+    "provider": { "type": "string" },
+    "model": { "type": "string" },
+    "capabilities": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "cost_class": { "enum": ["low", "medium", "high"] },
+    "privacy_modes": {
+      "type": "array",
+      "items": { "enum": ["standard", "private", "local-only"] }
+    },
+    "task_types": {
+      "type": "array",
+      "items": { "enum": ["coding", "summarization", "extraction", "research", "orchestration", "vision", "pdf"] }
+    }
+  },
+  "additionalProperties": false
+}

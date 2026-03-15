@@ -1,3 +1,4 @@
+import { estimateCost } from './cost.js';
 import type { RoutingDecision, RoutingRequest } from './types.js';
 
 export interface RouteTraceEvent {
@@ -10,6 +11,7 @@ export interface RouteTraceEvent {
   model: string;
   status: 'selected';
   estimated_cost_usd: number | null;
+  cost_estimate: { min_usd: number; max_usd: number; basis: string };
   reason: string[];
   matched_policies: string[];
   emitted_at: string;
@@ -29,6 +31,7 @@ export function createSelectionTrace(
     model: decision.selected.model,
     status: 'selected',
     estimated_cost_usd: decision.budget.max_cost_usd ?? null,
+    cost_estimate: estimateCost(decision.selected.model, request.context_size),
     reason: decision.reason,
     matched_policies: decision.matched_policies,
     emitted_at: new Date().toISOString(),
